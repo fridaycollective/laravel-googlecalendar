@@ -1,15 +1,15 @@
 <?php
 
-namespace FridayCollective\LaravelGmail;
+namespace FridayCollective\LaravelGoogleCalendar;
 
-use FridayCollective\LaravelGmail\Traits\Configurable;
+use FridayCollective\LaravelGoogleCalendar\Traits\Configurable;
 use Google_Client;
 use Google_Service_Gmail;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 
-class GmailConnection extends Google_Client
+class GoogleCalendarConnection extends Google_Client
 {
 
     use Configurable {
@@ -49,7 +49,7 @@ class GmailConnection extends Google_Client
      */
     public function checkPreviouslyLoggedIn()
     {
-        $credentials = $this->getClientGmailCredentials();
+        $credentials = $this->getClientGoogleCalendarCredentials();
 
         $allowJsonEncrypt = $this->_config['allow_json_encrypt'];
 
@@ -144,7 +144,7 @@ class GmailConnection extends Google_Client
      */
     public function saveAccessToken(array $config)
     {
-        $credentials = $this->getClientGmailCredentials();
+        $credentials = $this->getClientGoogleCalendarCredentials();
 
         if ($credentials) {
             $allowJsonEncrypt = $this->_config['allow_json_encrypt'];
@@ -187,14 +187,12 @@ class GmailConnection extends Google_Client
             $code = (string)$request->input('code', null);
             if (!is_null($code) && !empty($code)) {
                 $accessToken = $this->fetchAccessTokenWithAuthCode($code);
-                $me = $this->getProfile();
-                if (property_exists($me, 'emailAddress')) {
-                    $this->emailAddress = $me->emailAddress;
-                    $accessToken['email'] = $me->emailAddress;
-                }
+
+                $service = new \Google_Service_Oauth2($this);
+                $this->emailAddress = $service->userinfo->get()['email'];
+                $accessToken['email'] = $service->userinfo->get()['email'];
 
                 $this->setBothAccessToken($accessToken);
-
                 return $accessToken;
             } else {
                 throw new \Exception('No access token');
@@ -269,7 +267,7 @@ class GmailConnection extends Google_Client
      */
     public function deleteAccessToken()
     {
-        $credentials = $this->getClientGmailCredentials();
+        $credentials = $this->getClientGoogleCalendarCredentials();
 
         $allowJsonEncrypt = $this->_config['allow_json_encrypt'];
 

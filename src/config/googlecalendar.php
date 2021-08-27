@@ -31,13 +31,14 @@ return [
     'project_id' => env('GOOGLE_PROJECT_ID'),
     'client_id' => env('GOOGLE_CLIENT_ID'),
     'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    'redirect_url' => env('GOOGLE_REDIRECT_URI', '/'),
-    'pubsub_topic_name' => env('GOOGLE_PUBSUB_TOPIC_NAME'),
+    'redirect_url' => env('GOOGLE_CALENDAR_REDIRECT_URI', '/'),
+    'pubsub_topic_name' => env('GOOGLE_CALENDAR_PUBSUB_TOPIC_NAME'),
 
     'state' => null,
 
     'scopes' => [
-        'all',
+        'https://www.googleapis.com/auth/calendar.events',
+        'https://www.googleapis.com/auth/userinfo.email'
     ],
 
     /*

@@ -1,76 +1,103 @@
 <?php
 
-namespace FridayCollective\LaravelGmail\Http\Controllers;
+namespace FridayCollective\LaravelGoogleCalendar\Http\Controllers;
 
 
+use App\Models\CalendarIntegrationConfig;
+use App\Services\Google\Calendar\GoogleCalendarService;
 use Carbon\Carbon;
-use FridayCollective\LaravelGmail\LaravelGmail;
-use FridayCollective\LaravelGmail\Models\UserMailConfig;
+use FridayCollective\LaravelGoogleCalendar\LaravelGoogleCalendar;
+use FridayCollective\LaravelGoogleCalendar\Models\UserCalendarIntegrationConfig;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
 class OAuthController extends Controller
 {
-    public function fetchMailConfig()
+    public function fetchCalendarIntegrationConfig()
     {
-        $mailConfig = auth()->user()->mailConfig;
-        if ($mailConfig && $mailConfig->status !== 'pending'){
-            return $mailConfig;
+        $calendarIntegrationConfig = auth()->user()->calendarIntegrationConfig;
+        if ($calendarIntegrationConfig && $calendarIntegrationConfig->status !== 'pending'){
+            return $calendarIntegrationConfig;
         }
         return null;
     }
 
-    public function gmailRedirect()
+    public function googleCalendarRedirect()
     {
-        $mailConfig = new UserMailConfig();
-        $mailConfig->user_id = auth()->user()->id;
-        $mailConfig->type = 'google';
-        $mailConfig->initial_sync_days = 100;
-        $mailConfig->state_uuid = Str::uuid()->toString();
-        $mailConfig->status = "pending";
-        $mailConfig->save();
+        $calendarIntegrationConfig = new UserCalendarIntegrationConfig();
+        $calendarIntegrationConfig->user_id = auth()->user()->id;
+        $calendarIntegrationConfig->type = 'google';
+        $calendarIntegrationConfig->state_uuid = Str::uuid()->toString();
+        $calendarIntegrationConfig->status = "pending";
+        $calendarIntegrationConfig->save();
 
-        $gmailService = new LaravelGmail($mailConfig);
-        return $gmailService->redirect();
+        $googleCalendarService = new LaravelGoogleCalendar($calendarIntegrationConfig);
+        return $googleCalendarService->redirect();
     }
 
-    public function gmailCallback()
+    public function googleCalendarCallback()
     {
         $error = Request::capture()->get('error');
 
         if (!$error) {
             $stateUuid = Request::capture()->get('state');
-            $mailConfig = UserMailConfig::where('state_uuid', $stateUuid)->first();
+            $calendarIntegrationConfig = UserCalendarIntegrationConfig::where('state_uuid', $stateUuid)->first();
 
-            $gmailService = new LaravelGmail($mailConfig);
-            $gmailService->makeToken();
+            $googleCalendarService = new LaravelGoogleCalendar($calendarIntegrationConfig);
+            $googleCalendarService->makeToken();
 
-            $mailConfig->status = "active";
-            $mailConfig->save();
+            $calendarIntegrationConfig->status = "active";
+            $calendarIntegrationConfig->save();
 
-            UserMailConfig::where('user_id', $mailConfig->user_id)
+            $user = $calendarIntegrationConfig->user;
+            $user->calendar_service = 'google';
+            $user->save();
+
+            UserCalendarIntegrationConfig::where('user_id', $calendarIntegrationConfig->user_id)
                 ->where('status', 'pending')
                 ->delete();
+
+            // Subscribe to calendar events
+            $calendarService = new GoogleCalendarService($user->id);
+            $calendarService->subscribeToCalendarNotifications();
         }
 
         return redirect()->to(env('PORTAL_URL') . '/settings/email-integration');
     }
 
-    public function gmailLogout()
+
+    public function googleCalendarLogout()
     {
-        $mailConfig = auth()->user()->mailConfig;
+        try {
+            $user = auth()->user();
+            $calendarIntegrationConfig = $user->calendarIntegrationConfig;
 
-        $gmailService = new LaravelGmail($mailConfig);
-        $gmailService->stop();
-        $gmailService->logout();
+            try {
+                // Unsubscribe from calendar events
+                $calendarService = new GoogleCalendarService($user->id);
+                $calendarService->unsubscribeFromCalendarNotifications();
+            } catch (\Exception $e) {
+                Log::error($e);
+            }
 
-        UserMailConfig::where('user_id', auth()->user()->id)
-            ->where('type', 'google')
-            ->delete();
+            $googleCalendarService = new LaravelGoogleCalendar($calendarIntegrationConfig);
+            $googleCalendarService->stop();
+            $googleCalendarService->logout();
 
+            UserCalendarIntegrationConfig::where('user_id', auth()->user()->id)
+                ->where('type', 'google')
+                ->delete();
 
-        return response()->json(['message' => 'Disconnected from Google']);
+            $user->calendar_service = null;
+            $user->save();
+
+            return response()->json(['success' => true, 'message' => 'Disconnected.'], 200);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json(['success' => false], 500);
+        }
     }
 
 }

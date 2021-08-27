@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUserMailConfigsTable extends Migration
+class CreateUserCalendarIntegrationConfigsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,18 +13,19 @@ class CreateUserMailConfigsTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_mail_configs', function (Blueprint $table) {
+        Schema::create('user_calendar_integration_configs', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('user_id');
             $table->json('config')->nullable();
             $table->string('type');
             $table->string('status');
-            $table->integer('initial_sync_days')->default(30);
+            $table->string('sync_token')->nullable();
             $table->uuid('state_uuid')->nullable();
-            $table->dateTime('last_synced')->nullable();
+            $table->string('google_notification_channel_id')->nullable();
+            $table->string('google_notification_resource_id')->nullable();
+            $table->string('google_notification_channel_expiration')->nullable();
+            $table->string('gmail_last_history_id')->nullable();
             $table->timestamps();
-
-            $table->index('user_id');
         });
     }
 
@@ -35,6 +36,6 @@ class CreateUserMailConfigsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_mail_configs');
+        Schema::dropIfExists('user_calendar_integration_configs');
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace FridayCollective\LaravelGmail\Models;
+namespace FridayCollective\LaravelGoogleCalendar\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserMailConfig extends Model
+class UserCalendarIntegrationConfig extends Model
 {
     protected $fillable = [
       "user_id",

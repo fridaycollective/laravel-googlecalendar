@@ -1,20 +1,20 @@
 <?php
 
-namespace FridayCollective\LaravelGmail;
+namespace FridayCollective\LaravelGoogleCalendar;
 
-use FridayCollective\LaravelGmail\Exceptions\AuthException;
-use FridayCollective\LaravelGmail\Services\History;
-use FridayCollective\LaravelGmail\Services\Message;
+use FridayCollective\LaravelGoogleCalendar\Exceptions\AuthException;
+use FridayCollective\LaravelGoogleCalendar\Services\History;
+use FridayCollective\LaravelGoogleCalendar\Services\Message;
 use Illuminate\Support\Facades\Config;
 
-class LaravelGmail extends GmailConnection
+class LaravelGoogleCalendar extends GoogleCalendarConnection
 {
     protected $service;
 
     public function __construct($integrationConfig)
     {
-        $config = Config::get('gmail');
-        $config['redirect_url'] = env('GOOGLE_REDIRECT_URI');
+        $config = Config::get('googlecalendar');
+        $config['redirect_url'] = env('GOOGLE_CALENDAR_REDIRECT_URI');
         $config['state'] = $integrationConfig->state_uuid;
 
         parent::__construct($config, $integrationConfig);
@@ -69,7 +69,7 @@ class LaravelGmail extends GmailConnection
 
     public function redirect()
     {
-        return $this->createAuthUrl($this->prepareScopes());
+        return $this->createAuthUrl($this->prepareCalendarScopes());
     }
 
     public function prepareCalendarScopes()

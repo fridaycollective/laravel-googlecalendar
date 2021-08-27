@@ -1,10 +1,10 @@
 <?php
 
-namespace FridayCollective\LaravelGmail;
+namespace FridayCollective\LaravelGoogleCalendar;
 
 use Illuminate\Support\ServiceProvider;
 
-class LaravelGmailServiceProvider extends ServiceProvider
+class LaravelGoogleCalendarServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -24,7 +24,7 @@ class LaravelGmailServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/config/gmail.php' => config_path('gmail.php'),
+            __DIR__.'/config/googlecalendar.php' => config_path('googlecalendar.php'),
         ]);
 
         $this->loadRoutesFrom(__DIR__.'/routes/api.php');

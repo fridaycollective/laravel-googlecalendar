@@ -11,25 +11,25 @@
 */
 
 
-use FridayCollective\LaravelGmail\Http\Controllers\OAuthController;
-use FridayCollective\LaravelGmail\Http\Controllers\PubSubController;
+use FridayCollective\LaravelGoogleCalendar\Http\Controllers\OAuthController;
+use FridayCollective\LaravelGoogleCalendar\Http\Controllers\PubSubController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api')->group(function () {
     Route::prefix('oauth')->group(function () {
-        Route::prefix('gmail')->group(function () {
-            Route::get('/callback', [OAuthController::class, 'gmailCallback']);
+        Route::prefix('google-calendar')->group(function () {
+            Route::get('/callback', [OAuthController::class, 'googleCalendarCallback']);
         });
     });
 });
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('api')->group(function () {
-        Route::get('/mail-config', [OAuthController::class, 'fetchMailConfig']);
+        Route::get('/calendar-integration-config', [OAuthController::class, 'fetchCalendarIntegrationConfig']);
         Route::prefix('oauth')->group(function () {
-            Route::prefix('gmail')->group(function () {
-                Route::get('/', [OAuthController::class, 'gmailRedirect']);
-                Route::post('/logout', [OAuthController::class, 'gmailLogout']);
+            Route::prefix('google-calendar')->group(function () {
+                Route::get('/', [OAuthController::class, 'googleCalendarRedirect']);
+                Route::post('/logout', [OAuthController::class, 'googleCalendarLogout']);
             });
         });
     });

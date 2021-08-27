@@ -1,6 +1,6 @@
 <?php
 
-namespace FridayCollective\LaravelGmail\Exceptions;
+namespace FridayCollective\LaravelGoogleCalendar\Exceptions;
 
 class AuthException extends \Exception
 {
