@@ -1,6 +1,6 @@
 {
-  "name": "fridaycollective/laravel-gmail",
-  "description": "Gmail API package for Laravel based on dacastro4/laravel-gmail",
+  "name": "fridaycollective/laravel-googlecalendar",
+  "description": "Google Calendar API package for Laravel based on dacastro4/laravel-gmail",
   "keywords": [
     "api",
     "laravel",
@@ -33,7 +33,7 @@
   },
   "autoload": {
     "psr-4": {
-      "FridayCollective\\LaravelGmail\\": "src/"
+      "FridayCollective\\LaravelGoogleCalendar\\": "src/"
     }
   },
   "autoload-dev": {
@@ -49,7 +49,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "FridayCollective\\LaravelGmail\\LaravelGmailServiceProvider"
+        "FridayCollective\\LaravelGoogleCalendar\\LaravelGoogleCalendarServiceProvider"
       ]
     }
   },
