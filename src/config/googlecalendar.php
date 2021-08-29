@@ -37,8 +37,9 @@ return [
     'state' => null,
 
     'scopes' => [
-        'https://www.googleapis.com/auth/calendar.events',
-        'https://www.googleapis.com/auth/userinfo.email'
+        'https://www.googleapis.com/auth/calendar.readonly', // view calendar list
+        'https://www.googleapis.com/auth/calendar.events', // modify calendar events
+        'https://www.googleapis.com/auth/userinfo.email' // view user email
     ],
 
     /*
