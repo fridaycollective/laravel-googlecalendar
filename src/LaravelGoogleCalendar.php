@@ -3,8 +3,6 @@
 namespace FridayCollective\LaravelGoogleCalendar;
 
 use FridayCollective\LaravelGoogleCalendar\Exceptions\AuthException;
-use FridayCollective\LaravelGoogleCalendar\Services\History;
-use FridayCollective\LaravelGoogleCalendar\Services\Message;
 use Illuminate\Support\Facades\Config;
 
 class LaravelGoogleCalendar extends GoogleCalendarConnection
@@ -18,32 +16,6 @@ class LaravelGoogleCalendar extends GoogleCalendarConnection
         $config['state'] = $integrationConfig->state_uuid;
 
         parent::__construct($config, $integrationConfig);
-    }
-
-    /**
-     * @return Message
-     * @throws AuthException
-     */
-    public function message()
-    {
-        if (!$this->getToken()) {
-            throw new AuthException('No credentials found.');
-        }
-
-        return new Message($this);
-    }
-
-    /**
-     * @return History
-     * @throws AuthException
-     */
-    public function history($startHistoryId)
-    {
-        if (!$this->getToken()) {
-            throw new AuthException('No credentials found.');
-        }
-
-        return new History($this, $startHistoryId);
     }
 
     /**
