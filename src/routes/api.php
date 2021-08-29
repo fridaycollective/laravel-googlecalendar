@@ -12,6 +12,7 @@
 
 
 use FridayCollective\LaravelGoogleCalendar\Http\Controllers\OAuthController;
+use FridayCollective\LaravelGoogleCalendar\Http\Controllers\UserGoogleCalendarController;
 use FridayCollective\LaravelGoogleCalendar\Http\Controllers\PubSubController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,7 @@ Route::prefix('api')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('api')->group(function () {
+        Route::apiResource('user-google-calendars', UserGoogleCalendarController::class);
         Route::get('/calendar-integration-config', [OAuthController::class, 'fetchCalendarIntegrationConfig']);
         Route::prefix('oauth')->group(function () {
             Route::prefix('google-calendar')->group(function () {
