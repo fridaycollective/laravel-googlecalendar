@@ -11,6 +11,7 @@ class UserCalendarIntegrationConfig extends Model
       "config",
       "type",
       "status",
+      "sync_to_user_google_calendar_id"
     ];
 
     public function user(){
@@ -20,5 +21,10 @@ class UserCalendarIntegrationConfig extends Model
     public function googleCalendars()
     {
         return $this->hasMany(UserGoogleCalendar::class);
+    }
+
+    public function syncToGoogleCalendar()
+    {
+        return $this->belongsTo(UserGoogleCalendar::class, 'sync_to_user_google_calendar_id');
     }
 }

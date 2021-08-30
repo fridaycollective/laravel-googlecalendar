@@ -27,6 +27,7 @@ Route::prefix('api')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::prefix('api')->group(function () {
         Route::get('/calendar-integration-config', [OAuthController::class, 'fetchCalendarIntegrationConfig']);
+        Route::put('/calendar-integration-config', [OAuthController::class, 'updateCalendarIntegrationConfig']);
 
         Route::post('/user-google-calendars/refresh', [UserGoogleCalendarController::class, 'refresh']);
         Route::apiResource('user-google-calendars', UserGoogleCalendarController::class);

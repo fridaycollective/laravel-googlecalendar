@@ -3,6 +3,8 @@
 namespace FridayCollective\LaravelGoogleCalendar\Http\Controllers;
 
 use FridayCollective\LaravelGoogleCalendar\Handlers\CalendarListHandler;
+use FridayCollective\LaravelGoogleCalendar\Models\UserGoogleCalendar;
+use FridayCollective\LaravelGoogleCalendar\Services\Google\Calendar\GoogleCalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -53,7 +55,20 @@ class UserGoogleCalendarController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $userGoogleCalendar = UserGoogleCalendar::find($id);
+        $original_sync_enabled = $userGoogleCalendar->sync_enabled;
+        $userGoogleCalendar->update($request->all());
+
+        if ($original_sync_enabled !== $userGoogleCalendar->sync_enabled){
+            $calendarService = new GoogleCalendarService($userGoogleCalendar->calendarIntegrationConfig);
+            if ($userGoogleCalendar->sync_enabled) {
+                $calendarService->subscribeToCalendarNotifications($userGoogleCalendar);
+            } else {
+                $calendarService->unsubscribeFromCalendarNotifications($userGoogleCalendar);
+            }
+        }
+
+        return response()->json(['message' => 'Updated'], 200);
     }
 
     /**

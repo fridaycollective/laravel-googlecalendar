@@ -11,8 +11,8 @@ use FridayCollective\LaravelGoogleCalendar\LaravelGoogleCalendar;
 use FridayCollective\LaravelGoogleCalendar\Models\UserCalendarIntegrationConfig;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class OAuthController extends Controller
 {
@@ -23,6 +23,14 @@ class OAuthController extends Controller
             return $calendarIntegrationConfig;
         }
         return null;
+    }
+
+    public function updateCalendarIntegrationConfig(Request $request)
+    {
+        $calendarIntegrationConfig = auth()->user()->calendarIntegrationConfig;
+        $calendarIntegrationConfig->update($request->all());
+
+        return response()->json(['message' => 'Updated'], 200);
     }
 
     public function googleCalendarRedirect()
@@ -59,12 +67,6 @@ class OAuthController extends Controller
             UserCalendarIntegrationConfig::where('user_id', $calendarIntegrationConfig->user_id)
                 ->where('status', 'pending')
                 ->delete();
-
-            /* DO THIS LATER PER CALENDAR INSTEAD AND REMOVE FROM HERE
-            // Subscribe to calendar events
-            $calendarService = new GoogleCalendarService($user->id);
-            $calendarService->subscribeToCalendarNotifications();
-            */
             
             CalendarListHandler::syncCalendarList($calendarIntegrationConfig);
         }
@@ -79,23 +81,16 @@ class OAuthController extends Controller
             $user = auth()->user();
             $calendarIntegrationConfig = $user->calendarIntegrationConfig;
 
-            try {
-                /* @TODO CHANGE THIS TO BE PER CALENDAR
-                // Unsubscribe from calendar events
-                $calendarService = new GoogleCalendarService($user->id);
-                $calendarService->unsubscribeFromCalendarNotifications();
-                 */
-            } catch (\Exception $e) {
-                Log::error($e);
+            foreach ($calendarIntegrationConfig->googleCalendars as $userGoogleCalendar) {
+                if ($userGoogleCalendar->google_notification_channel_id) {
+                    (new GoogleCalendarService($calendarIntegrationConfig))
+                        ->unsubscribeFromCalendarNotifications($userGoogleCalendar);
+                }
+                $userGoogleCalendar->delete();
             }
-
             $googleCalendarService = new LaravelGoogleCalendar($calendarIntegrationConfig);
-            //$googleCalendarService->stop();
             $googleCalendarService->logout();
-
-            UserGoogleCalendar::where('user_calendar_integration_config_id', $calendarIntegrationConfig->id)
-                ->delete();
-
+            
             UserCalendarIntegrationConfig::where('user_id', auth()->user()->id)
                 ->where('type', 'google')
                 ->delete();

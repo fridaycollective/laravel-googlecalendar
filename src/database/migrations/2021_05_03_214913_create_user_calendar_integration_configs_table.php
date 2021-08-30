@@ -19,12 +19,9 @@ class CreateUserCalendarIntegrationConfigsTable extends Migration
             $table->json('config')->nullable();
             $table->string('type');
             $table->string('status');
+            $table->bigInteger('sync_to_user_google_calendar_id')->nullable();
             $table->string('sync_token')->nullable();
             $table->uuid('state_uuid')->nullable();
-            $table->string('google_notification_channel_id')->nullable();
-            $table->string('google_notification_resource_id')->nullable();
-            $table->string('google_notification_channel_expiration')->nullable();
-            $table->string('gmail_last_history_id')->nullable();
             $table->timestamps();
         });
     }

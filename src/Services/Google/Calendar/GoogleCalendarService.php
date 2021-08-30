@@ -6,6 +6,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use DateTime;
 use FridayCollective\LaravelGoogleCalendar\Models\UserCalendarIntegrationConfig;
+use FridayCollective\LaravelGoogleCalendar\Models\UserGoogleCalendar;
 use Google\Service\Exception;
 use Google_Client;
 use Google_Service_Calendar;
@@ -68,33 +69,39 @@ class GoogleCalendarService
     }
 
 
-    public function subscribeToCalendarNotifications($calendarId) {
-        /* @TODO THIS MUST BE PER CALENDAR AND LOGGED PER CALENDAR IN MODEL */
-        $channelConfig = new \Google_Service_Calendar_Channel();
-        $channelConfig->setId('CRANK_CRM_CAL_CONFIG_ID_' . $this->calendarConfig->id);
-        $channelConfig->setType('web_hook');
-        $channelConfig->setAddress(env('APP_URL') . '/api/webhooks/google-calendar');
+    public function subscribeToCalendarNotifications(UserGoogleCalendar $userGoogleCalendar) {
+        try {
+            $channelConfig = new \Google_Service_Calendar_Channel();
+            $channelConfig->setId('CRANK_CRM_U_GCAL_ID_' . $userGoogleCalendar->id);
+            $channelConfig->setType('web_hook');
+            $channelConfig->setAddress(env('APP_URL') . '/webhooks/google-calendar');
 
-        $response = $this->service->events->watch($calendarId, $channelConfig);
+            $response = $this->service->events->watch($userGoogleCalendar->google_id, $channelConfig);
 
-        $this->calendarConfig->google_notification_channel_id = $response->getId();
-        $this->calendarConfig->google_notification_resource_id = $response->getResourceId();
-        $this->calendarConfig->google_notification_channel_expiration = $response->getExpiration();
-        $this->calendarConfig->save();
+            $userGoogleCalendar->google_notification_channel_id = $response->getId();
+            $userGoogleCalendar->google_notification_resource_id = $response->getResourceId();
+            $userGoogleCalendar->google_notification_channel_expiration = $response->getExpiration();
+            $userGoogleCalendar->save();
+        } catch (\Exception $e) {
+            Log::error($e);
+        }
     }
 
-    public function unsubscribeFromCalendarNotifications() {
-        /* @TODO THIS MUST BE PER CALENDAR AND LOGGED PER CALENDAR IN MODEL */
-        $channelConfig = new \Google_Service_Calendar_Channel();
-        $channelConfig->setId($this->calendarConfig->google_notification_channel_id);
-        $channelConfig->setResourceId($this->calendarConfig->google_notification_resource_id);
+    public function unsubscribeFromCalendarNotifications(UserGoogleCalendar $userGoogleCalendar) {
+        try {
+            $channelConfig = new \Google_Service_Calendar_Channel();
+            $channelConfig->setId($userGoogleCalendar->google_notification_channel_id);
+            $channelConfig->setResourceId($userGoogleCalendar->google_notification_resource_id);
 
-        $this->service->channels->stop($channelConfig);
+            $this->service->channels->stop($channelConfig);
 
-        $this->calendarConfig->google_notification_channel_id = null;
-        $this->calendarConfig->google_notification_resource_id = null;
-        $this->calendarConfig->google_notification_channel_expiration = null;
-        $this->calendarConfig->save();
+            $userGoogleCalendar->google_notification_channel_id = null;
+            $userGoogleCalendar->google_notification_resource_id = null;
+            $userGoogleCalendar->google_notification_channel_expiration = null;
+            $userGoogleCalendar->save();
+        } catch (\Exception $e) {
+            Log::error($e);
+        }
     }
 
 

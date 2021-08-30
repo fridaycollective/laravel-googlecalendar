@@ -18,8 +18,11 @@ class CreateUserGoogleCalendarsTable extends Migration
             $table->bigInteger('user_id');
             $table->bigInteger('user_calendar_integration_config_id');
             $table->string('google_id');
-            $table->string('etag');
             $table->boolean('sync_enabled')->default(false);
+            $table->string('google_notification_channel_id')->nullable();
+            $table->string('google_notification_resource_id')->nullable();
+            $table->string('google_notification_channel_expiration')->nullable();
+            $table->string('etag');
             $table->string('collection_key');
             $table->string('description')->nullable();
             $table->string('summary');
