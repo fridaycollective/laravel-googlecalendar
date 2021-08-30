@@ -4,6 +4,7 @@ namespace FridayCollective\LaravelGoogleCalendar\Http\Controllers;
 
 
 use App\Models\CalendarIntegrationConfig;
+use FridayCollective\LaravelGoogleCalendar\Handlers\CalendarListHandler;
 use FridayCollective\LaravelGoogleCalendar\Models\UserGoogleCalendar;
 use FridayCollective\LaravelGoogleCalendar\Services\Google\Calendar\GoogleCalendarService;
 use FridayCollective\LaravelGoogleCalendar\LaravelGoogleCalendar;
@@ -65,27 +66,7 @@ class OAuthController extends Controller
             $calendarService->subscribeToCalendarNotifications();
             */
             
-            $calendarService = new GoogleCalendarService($calendarIntegrationConfig);
-            $calendarList = $calendarService->getCalendarList();
-
-            foreach ($calendarList->items as $calendar) {
-                if ($calendar->accessRole === "owner" || $calendar->accessRole === "writer") {
-                    $userGoogleCalendar = new UserGoogleCalendar();
-                    $userGoogleCalendar->user_id = $user->id;
-                    $userGoogleCalendar->user_calendar_integration_config_id = $calendarIntegrationConfig->id;
-                    $userGoogleCalendar->google_id = $calendar['id'];
-                    $userGoogleCalendar->etag = $calendar['etag'];
-                    $userGoogleCalendar->collection_key = $calendar['collection_key'];
-                    $userGoogleCalendar->description = $calendar['description'];
-                    $userGoogleCalendar->summary = $calendar['summary'];
-                    $userGoogleCalendar->primary = $calendar['primary'] ?? false;
-                    $userGoogleCalendar->selected = $calendar['selected'] ?? false;
-                    $userGoogleCalendar->timezone = $calendar['timeZone'];
-                    $userGoogleCalendar->background_color = $calendar['backgroundColor'];
-                    $userGoogleCalendar->foreground_color = $calendar['foregroundColor'];
-                    $userGoogleCalendar->save();
-                }
-            }
+            CalendarListHandler::syncCalendarList($calendarIntegrationConfig);
         }
 
         return redirect()->to(env('PORTAL_URL') . '/settings/calendar-integration');

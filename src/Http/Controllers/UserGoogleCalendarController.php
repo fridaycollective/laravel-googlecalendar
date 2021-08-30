@@ -2,9 +2,14 @@
 
 namespace FridayCollective\LaravelGoogleCalendar\Http\Controllers;
 
+use FridayCollective\LaravelGoogleCalendar\Handlers\CalendarListHandler;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
+/**
+ * Class UserGoogleCalendarController
+ * @package FridayCollective\LaravelGoogleCalendar\Http\Controllers
+ */
 class UserGoogleCalendarController extends Controller
 {
     /**
@@ -60,5 +65,19 @@ class UserGoogleCalendarController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refresh(Request $request)
+    {
+        $user = auth()->user();
+
+        if ($user->calendarIntegrationConfig) {
+            CalendarListHandler::syncCalendarList($user->calendarIntegrationConfig);
+        }
+        return response()->json(['message' => 'Success'], 200);
     }
 }

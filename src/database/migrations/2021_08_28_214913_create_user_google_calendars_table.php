@@ -28,6 +28,7 @@ class CreateUserGoogleCalendarsTable extends Migration
             $table->string('timezone');
             $table->string('background_color');
             $table->string('foreground_color');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

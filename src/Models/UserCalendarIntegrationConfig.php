@@ -16,4 +16,9 @@ class UserCalendarIntegrationConfig extends Model
     public function user(){
         return $this->belongsTo(config('auth.providers.users.model'));
     }
+
+    public function googleCalendars()
+    {
+        return $this->hasMany(UserGoogleCalendar::class);
+    }
 }
