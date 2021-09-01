@@ -10,7 +10,7 @@ class UserGoogleCalendar extends Model
     use SoftDeletes;
 
     protected $fillable = ['sync_enabled'];
-    
+
     public function user(){
         return $this->belongsTo(config('auth.providers.users.model'));
     }

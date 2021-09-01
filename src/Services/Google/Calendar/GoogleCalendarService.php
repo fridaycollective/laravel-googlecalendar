@@ -55,7 +55,7 @@ class GoogleCalendarService
     }
 
 
-    private function saveAccessToken(CalendarIntegrationConfig $dbCalendarConfig, array $config)
+    private function saveAccessToken(UserCalendarIntegrationConfig $dbCalendarConfig, array $config)
     {
         $allowJsonEncrypt = env('GOOGLE_ALLOW_JSON_ENCRYPT', false);
         if ($allowJsonEncrypt) {
@@ -117,9 +117,14 @@ class GoogleCalendarService
     /*
      * @link https://developers.google.com/google-apps/calendar/v3/reference/events/list
      */
-    public function listEvents(User $user, Carbon $startDateTime = null, Carbon $endDateTime = null, array $queryParameters = [])
+    public function listEvents(
+        UserCalendarIntegrationConfig $calendarConfig,
+        $calendarId,
+        Carbon $startDateTime = null,
+        Carbon $endDateTime = null,
+        array $queryParameters = []
+    )
     {
-        $calendarConfig = $user->calendarIntegrationConfig;
         $syncToken = $calendarConfig->sync_token;
 
         $retCollection = new Collection();
@@ -146,7 +151,7 @@ class GoogleCalendarService
                     if ($pageToken) {
                         $optParams['pageToken'] = $pageToken;
                     }
-                    $eventResponse = $this->service->events->listEvents($this->calendarId, $optParams);
+                    $eventResponse = $this->service->events->listEvents($calendarId, $optParams);
                     if (!$eventResponse) {
                         return null;
                     }
@@ -183,7 +188,7 @@ class GoogleCalendarService
                         if (sizeof(array_filter($e->getErrors(), function ($error) {
                                 return $error['reason'] === "notFound";
                             })) > 0) {
-                            Log::error("GOOGLE CALENDAR 404 NOT FOUND FOR USER " . $user->id);
+                            Log::error("GOOGLE CALENDAR 404 NOT FOUND FOR USER " . $calendarConfig->user->id);
                         } else {
                             //Log::error($e->getMessage());
                         }
@@ -191,7 +196,7 @@ class GoogleCalendarService
                         $calendarConfig->status = 'revoked_expired';
                         $calendarConfig->save();
 
-                        Log::debug("Expired calendar integration for user: " . $user->id);
+                        Log::debug("Expired calendar integration for user: " . $calendarConfig->user->id);
                     } else {
                         //Log::error($e);
                     }
@@ -203,18 +208,18 @@ class GoogleCalendarService
         return $retCollection;
     }
 
-    public function insertEvent($event, $calendarId = 'primary')
+    public function insertEvent($event, $calendarId)
     {
         return $this->service->events->insert($calendarId, $event);
     }
 
 
-    public function deleteEvent($eventId, $calendarId = 'primary')
+    public function deleteEvent($eventId, $calendarId)
     {
         return $this->service->events->delete($calendarId, $eventId);
     }
 
-    public function getEvent($eventId, $calendarId = 'primary')
+    public function getEvent($eventId, $calendarId)
     {
         try {
             return $this->service->events->get($calendarId, $eventId);
@@ -231,8 +236,8 @@ class GoogleCalendarService
         }
     }
 
-    public function updateEvent($event, $calendarId = 'primary')
+    public function updateEvent($event, $calendarId)
     {
-        return $this->service->events->update('primary', $event->getId(), $event);
+        return $this->service->events->update($calendarId, $event->getId(), $event);
     }
 }

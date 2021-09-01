@@ -12,7 +12,7 @@ use FridayCollective\LaravelGoogleCalendar\Models\UserCalendarIntegrationConfig;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; 
 
 class OAuthController extends Controller
 {

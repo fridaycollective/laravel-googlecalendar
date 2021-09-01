@@ -2,9 +2,10 @@
 
 namespace FridayCollective\LaravelGoogleCalendar\Services\Google\Calendar;
 
-use App\Models\User;
 use DateTime;
 use Carbon\Carbon;
+use FridayCollective\LaravelGoogleCalendar\Models\UserCalendarIntegrationConfig;
+use FridayCollective\LaravelGoogleCalendar\Models\UserGoogleCalendar;
 use Google_Service_Calendar_Event;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -16,27 +17,32 @@ class GoogleEvent
     /** @var \Google_Service_Calendar_Event */
     public $googleEvent;
 
-    /** @var string */
-    protected $calendarId;
-
     /** @var array */
     protected $attendees;
 
-    protected $user;
+    protected $calendarIntegrationConfig;
+
+    protected $userGoogleCalendar;
 
     protected $googleService;
 
-    public function __construct($user_id)
+    public function __construct(UserCalendarIntegrationConfig $calendarIntegrationConfig, $userGoogleCalendar)
     {
-        $this->user = User::find($user_id);
+        $this->calendarIntegrationConfig = $calendarIntegrationConfig;
+        $this->userGoogleCalendar = $userGoogleCalendar;
         $this->attendees = [];
-        $this->googleService = new GoogleCalendarService($this->user->id);
+        $this->googleService = new GoogleCalendarService($this->calendarIntegrationConfig);
         $this->googleEvent = new Google_Service_Calendar_Event;
+    }
+
+    public function setUserGoogleCalendar(UserGoogleCalendar $userGoogleCalendar)
+    {
+        $this->userGoogleCalendar = $userGoogleCalendar;
     }
 
     public function createFromGoogleCalendarEvent(Google_Service_Calendar_Event $googleEvent, $calendarId)
     {
-        $event = new GoogleEvent($this->user->id);
+        $event = new GoogleEvent($this->calendarIntegrationConfig, $this->userGoogleCalendar);
 
         $event->googleEvent = $googleEvent;
         $event->calendarId = $calendarId;
@@ -47,7 +53,7 @@ class GoogleEvent
     public function get(Carbon $startDateTime = null, Carbon $endDateTime = null, array $queryParameters = [], string $calendarId = null) : Collection
     {
 
-        $googleEvents = $this->googleService->listEvents($this->user, $startDateTime, $endDateTime, $queryParameters);
+        $googleEvents = $this->googleService->listEvents($this->calendarIntegrationConfig, $calendarId, $startDateTime, $endDateTime, $queryParameters);
         if(!$googleEvents) {
             return null;
         }
@@ -104,7 +110,7 @@ class GoogleEvent
     {
         $method = $method ?? ($this->exists() ? 'updateEvent' : 'insertEvent');
         $this->googleEvent->setAttendees($this->attendees);
-        return $this->googleService->$method($this->googleEvent);
+        return $this->googleService->$method($this->googleEvent, $this->userGoogleCalendar->google_id);
     }
 
     public function update(array $attributes, $optParams = []): self
@@ -121,11 +127,11 @@ class GoogleEvent
         $this->googleService->deleteEvent($eventId);
     }
 
-    public function getEvent($eventId = null)
+    public function getEvent($eventId, $calendarId)
     {
-        $event = $this->googleService->getEvent($eventId);
+        $event = $this->googleService->getEvent($eventId, $calendarId);
         if ($event) {
-            return $this->createFromGoogleCalendarEvent($event, null);
+            return $this->createFromGoogleCalendarEvent($event, $calendarId);
         }
     }
 
