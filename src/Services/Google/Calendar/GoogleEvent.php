@@ -26,12 +26,16 @@ class GoogleEvent
 
     protected $googleService;
 
-    public function __construct(UserCalendarIntegrationConfig $calendarIntegrationConfig, $userGoogleCalendar)
+    public function __construct(
+        UserCalendarIntegrationConfig $calendarIntegrationConfig,
+        $userGoogleCalendar,
+        GoogleCalendarService $googleService
+    )
     {
         $this->calendarIntegrationConfig = $calendarIntegrationConfig;
         $this->userGoogleCalendar = $userGoogleCalendar;
         $this->attendees = [];
-        $this->googleService = new GoogleCalendarService($this->calendarIntegrationConfig);
+        $this->googleService = $googleService;
         $this->googleEvent = new Google_Service_Calendar_Event;
     }
 
@@ -42,7 +46,7 @@ class GoogleEvent
 
     public function createFromGoogleCalendarEvent(Google_Service_Calendar_Event $googleEvent, $calendarId)
     {
-        $event = new GoogleEvent($this->calendarIntegrationConfig, $this->userGoogleCalendar);
+        $event = new GoogleEvent($this->calendarIntegrationConfig, $this->userGoogleCalendar, $this->googleService);
 
         $event->googleEvent = $googleEvent;
         $event->calendarId = $calendarId;
