@@ -2,6 +2,7 @@
 
 namespace FridayCollective\LaravelGoogleCalendar\Jobs;
 
+use Carbon\Carbon;
 use FridayCollective\LaravelGoogleCalendar\Models\UserCalendarIntegrationConfig;
 use FridayCollective\LaravelGoogleCalendar\Services\Google\Calendar\GoogleCalendarService;
 use Illuminate\Bus\Queueable;
