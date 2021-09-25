@@ -1,15 +1,4 @@
 <?php
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-
 
 use FridayCollective\LaravelGoogleCalendar\Http\Controllers\OAuthController;
 use FridayCollective\LaravelGoogleCalendar\Http\Controllers\UserGoogleCalendarController;
@@ -24,7 +13,7 @@ Route::prefix('api')->group(function () {
     });
 });
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware('web')->group(function () {
     Route::prefix('api')->group(function () {
         Route::get('/calendar-integration-config', [OAuthController::class, 'fetchCalendarIntegrationConfig']);
         Route::put('/calendar-integration-config', [OAuthController::class, 'updateCalendarIntegrationConfig']);

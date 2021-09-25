@@ -27,7 +27,7 @@ class LaravelGoogleCalendarServiceProvider extends ServiceProvider
             __DIR__.'/config/googlecalendar.php' => config_path('googlecalendar.php'),
         ]);
 
-        $this->loadRoutesFrom(__DIR__.'/routes/api.php');
+        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
     }
 }
