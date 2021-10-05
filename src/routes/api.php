@@ -10,7 +10,7 @@ Route::prefix('api')->group(function () {
     Route::get('/oauth/google-calendar/callback', [OAuthController::class, 'googleCalendarCallback']);
 });
 
-Route::middleware(Config::get('googlecalendar.middleware'))->group(function () {
+Route::middleware(['api', Config::get('googlecalendar.middleware')])->group(function () {
     Route::prefix('api')->group(function () {
         Route::get('/calendar-integration-config', [OAuthController::class, 'fetchCalendarIntegrationConfig']);
         Route::put('/calendar-integration-config', [OAuthController::class, 'updateCalendarIntegrationConfig']);

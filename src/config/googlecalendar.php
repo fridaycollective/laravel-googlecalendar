@@ -29,6 +29,7 @@ return [
     */
 
     'middleware' => 'web',
+    'load_routes_from' => 'web',
 
     'project_id' => env('GOOGLE_PROJECT_ID'),
     'client_id' => env('GOOGLE_CLIENT_ID'),
